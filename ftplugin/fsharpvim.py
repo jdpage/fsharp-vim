@@ -1,5 +1,6 @@
 from subprocess import Popen, PIPE
 from os import path
+import time
 
 class FSAutoComplete:
     def __init__(self):
@@ -35,9 +36,11 @@ class FSAutoComplete:
         self.p.wait()
 
     def complete(self, fn, line, column):
-        self.send('completion "%s" %d %d\n' % (fn, line, column))
+        self.send('completion "%s" %d %d 1000\n' % (fn, line, column))
         msg = [""]
         while not msg[0].startswith("DATA: completion"):
+            if msg[0].startswith("ERROR:"):
+                return []
             #print msg
             msg = list(self.read_to_eof())
         return msg[1:]
@@ -51,6 +54,9 @@ if __name__ == '__main__':
     completions = fsac.complete(testscript, 7, 16)
     #print completions
     try:
+        assert completions == []
+        time.sleep(2.0)
+        completions = fsac.complete(testscript, 7, 16)
         assert completions == [ 'function1', 'function2', 'gunction' ]
     finally:
         fsac.quit()
