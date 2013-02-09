@@ -11,6 +11,12 @@ function! fsharpcomplete#Complete(findstart, base)
     if a:findstart == 1
         return col('.')
     else
-        python vim.command("return %s" % fsautocomplete.complete(vim.eval("expand('%')"), vim.eval("line('.')"), vim.eval("col('.')")))
+        python << EOF
+b = vim.current.buffer
+row, col = vim.current.window.cursor
+fsautocomplete.parse(b.name, True, '\n'.join(b))
+vim.command("return %s" % fsautocomplete.complete(b.name, row, col))
+EOF
     endif
 endfunction
+
