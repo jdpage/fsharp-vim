@@ -8,6 +8,14 @@ if exists('b:did_ftplugin')
 endif
 let b:did_ftplugin = 1
 
+python <<EOF
+import vim
+fsharp_dir = vim.eval("expand('<sfile>:p:h')")
+sys.path.append(fsharp_dir)
+from fsharpvim import FSAutoComplete
+fsautocomplete = FSAutoComplete(fsharp_dir)
+EOF
+
 let s:cpo_save = &cpo
 set cpo&vim
 
@@ -52,6 +60,19 @@ function! s:launchInteractive(from, to)
 endfunction
 
 com! -buffer -range=% Interactive call s:launchInteractive(<line1>, <line2>)
+
+function! fsharp#Complete(findstart, base)
+    if a:findstart == 1
+        return col('.')
+    else
+        python << EOF
+b = vim.current.buffer
+row, col = vim.current.window.cursor
+fsautocomplete.parse(b.name, True, '\n'.join(b))
+vim.command("return %s" % fsautocomplete.complete(b.name, row - 1, col))
+EOF
+    endif
+endfunction
 
 let &cpo = s:cpo_save
 

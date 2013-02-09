@@ -181,6 +181,8 @@ syn region   fsharpAttrib matchgroup=fsharpAttribute start="\[<" end=">]"
 syn region   fsharpRegion matchgroup=fsharpPreCondit start="\%(end\)\@<!region.*$"
             \ end="endregion" fold contains=ALL contained
 
+" omnicomplete
+set omnifunc=fsharp#Complete
 
 if version >= 508 || !exists("did_fs_syntax_inits")
     if version < 508
