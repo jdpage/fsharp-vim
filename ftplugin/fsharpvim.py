@@ -1,9 +1,16 @@
 from subprocess import Popen, PIPE
+from os import path
 
 class FSAutoComplete:
     def __init__(self):
-        self.p = Popen('cat', shell=False, stdin=PIPE, stdout=PIPE)
+        self.p = Popen(['mono', 'bin/fsautocomplete.exe'],
+                       stdin=PIPE,
+                       stdout=PIPE)
 
+    def send(self, txt):
+        #print "sending '%s'" % txt
+        self.p.stdin.write(txt)
+        
     def read_to_eof(self):
         while True:
             line = self.p.stdout.readline().strip('\n')
@@ -12,10 +19,38 @@ class FSAutoComplete:
             else:
                 yield line
 
-    def complete(self, line, column):
-        self.p.stdin.write('hello\nworld\nfrom\npython\nand\nf#\n<<EOF>>\n')
-        return list(self.read_to_eof())
+    def help(self):
+        self.send("help\n")
+
+    def project(self, fn):
+        self.p("project \"%s\"\n" % path.abspath(fn))
+
+    def parse(self, fn, full, txt):
+        fulltext = "full" if full else ""
+        self.send("parse \"%s\" %s\n%s<<EOF>>\n" %
+                                (fn, fulltext, txt))
+
+    def quit(self):
+        self.send("quit\n")
+        self.p.wait()
+
+    def complete(self, fn, line, column):
+        self.send('completion "%s" %d %d\n' % (fn, line, column))
+        msg = [""]
+        while not msg[0].startswith("DATA: completion"):
+            #print msg
+            msg = list(self.read_to_eof())
+        return msg[1:]
 
 if __name__ == '__main__':
+    testscript = "test/TestScript.fsx"
+    with open(testscript, 'r') as content_file:
+        content = content_file.read()
     fsac = FSAutoComplete()
-    assert fsac.complete(0, 0) == [ 'hello', 'from', 'python', 'and', 'f#' ]
+    fsac.parse(testscript, True, content)
+    completions = fsac.complete(testscript, 7, 16)
+    #print completions
+    try:
+        assert completions == [ 'function1', 'function2', 'gunction' ]
+    finally:
+        fsac.quit()
