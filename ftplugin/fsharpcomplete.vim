@@ -14,6 +14,7 @@ function! fsharpcomplete#Complete(findstart, base)
         python << EOF
 b = vim.current.buffer
 row, col = vim.current.window.cursor
+row = row - 1
 fsautocomplete.parse(b.name, True, '\n'.join(b))
 vim.command("return %s" % fsautocomplete.complete(b.name, row, col))
 EOF
