@@ -7,9 +7,12 @@ class FSAutoComplete:
         self.p = Popen(['mono', 'bin/fsautocomplete.exe'],
                        stdin=PIPE,
                        stdout=PIPE)
-
+        self.logfile=open("/tmp/log.txt", "w")
+        
     def send(self, txt):
         #print "sending '%s'" % txt
+        self.logfile.write(txt)
+        self.logfile.flush()
         self.p.stdin.write(txt)
         
     def read_to_eof(self):
@@ -28,12 +31,13 @@ class FSAutoComplete:
 
     def parse(self, fn, full, txt):
         fulltext = "full" if full else ""
-        self.send("parse \"%s\" %s\n%s<<EOF>>\n" %
+        self.send("parse \"%s\" %s\n%s\n<<EOF>>\n" %
                                 (fn, fulltext, txt))
 
     def quit(self):
         self.send("quit\n")
         self.p.wait()
+        self.logfile.close()
 
     def complete(self, fn, line, column):
         self.send('completion "%s" %d %d 1000\n' % (fn, line, column))
@@ -41,8 +45,8 @@ class FSAutoComplete:
         while not msg[0].startswith("DATA: completion"):
             if msg[0].startswith("ERROR:"):
                 return []
-            #print msg
             msg = list(self.read_to_eof())
+            self.logfile.write("\n".join(msg))
         return msg[1:]
 
 if __name__ == '__main__':
