@@ -15,8 +15,12 @@ function! fsharpcomplete#Complete(findstart, base)
 b = vim.current.buffer
 row, col = vim.current.window.cursor
 row = row - 1
+print 'parse(%s, True, %s)' % (b.name, b[0])
 fsautocomplete.parse(b.name, True, '\n'.join(b))
-vim.command("return %s" % fsautocomplete.complete(b.name, row, col))
+print 'complete(%s, %d, %d)' % (b.name, row, col)
+l = fsautocomplete.complete(b.name, row, col) 
+print 'finished: %s' % l
+vim.command("return %s" % l)
 EOF
     endif
 endfunction
