@@ -26,6 +26,14 @@ class FSAutoComplete:
 
                 yield line.strip('\n')
 
+    def read_and_find(self, line):
+        while True:
+            msg = list(self.read_to_eof())
+            if msg[0].startswith(line):
+                return msg[1:]
+            else:
+                return msg
+
     def help(self):
         self.send("help\n")
 
@@ -34,10 +42,11 @@ class FSAutoComplete:
 
     def parse(self, fn, full, lines):
         fulltext = "full" if full else ""
-        self.send("parse \"%s\" %s\n" % (fn, fulltext));
+        self.send("parse \"%s\" %s\n" % (fn, fulltext))
         for line in lines:
-            self.send(line + "\n");
-        self.send("<<EOF>>\n");
+            self.send(line + "\n")
+        self.send("<<EOF>>\n")
+        self.read_and_find('INFO: Background parsing started')
 
     def quit(self):
         self.send("quit\n")
@@ -47,17 +56,16 @@ class FSAutoComplete:
     def complete(self, fn, line, column, base):
         self.logfile.write('complete: base = %s\n' % base)
         self.send('completion "%s" %d %d 10000\n' % (fn, line, column))
-        msg = [""]
-        while not msg[0].startswith("DATA: completion"):
-            if msg[0].startswith("ERROR:"):
-                return msg
-            msg = list(self.read_to_eof())
-
-        msg = msg[1:]
+        msg = read_and_find('DATA: completion')
         if base != "":
             msg = filter(lambda(line): line.startswith(base), msg)
 
         return msg
+
+    def tooltip(self, fn, line, column):
+        self.send('tooltip "%s" %d %d 1000\n' % (fn, line, column))
+        msg = self.read_and_find('DATA: tooltip')
+        return '\n'.join(msg)
 
 if __name__ == '__main__':
     testscript = "test/TestScript.fsx"

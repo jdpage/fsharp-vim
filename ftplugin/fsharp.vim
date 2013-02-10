@@ -61,6 +61,15 @@ endfunction
 
 com! -buffer -range=% Interactive call s:launchInteractive(<line1>, <line2>)
 
+function! fsharp#Balloon()
+python <<EOF
+b = vim.buffers[int(vim.eval('v:beval_bufnr')) - 1]
+fsautocomplete.parse(b.name, True, b)
+balloon = fsautocomplete.tooltip(b.name, int(vim.eval('v:beval_lnum')) - 1, int(vim.eval('v:beval_col')))
+EOF
+    return pyeval('balloon')
+endfunction
+
 function! fsharp#Complete(findstart, base)
     let line = getline('.')
     let idx = col('.')
