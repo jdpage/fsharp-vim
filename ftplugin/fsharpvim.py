@@ -56,8 +56,8 @@ class FSAutoComplete:
     def complete(self, fn, line, column, base):
         self.logfile.write('complete: base = %s\n' % base)
         self.send('completion "%s" %d %d 10000\n' % (fn, line, column))
-        msg = read_and_find('DATA: completion')
-        if base != "":
+        msg = self.read_and_find('DATA: completion')
+        if base != '':
             msg = filter(lambda(line): line.startswith(base), msg)
 
         return msg
