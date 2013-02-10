@@ -1,6 +1,6 @@
 from subprocess import Popen, PIPE
 from os import path
-import time
+import unittest
 
 class FSAutoComplete:
     def __init__(self, dir):
@@ -38,7 +38,7 @@ class FSAutoComplete:
         self.send("help\n")
 
     def project(self, fn):
-        self.p("project \"%s\"\n" % path.abspath(fn))
+        self.send("project \"%s\"\n" % path.abspath(fn))
 
     def parse(self, fn, full, lines):
         fulltext = "full" if full else ""
@@ -67,18 +67,21 @@ class FSAutoComplete:
         msg = self.read_and_find('DATA: tooltip')
         return '\n'.join(msg)
 
+class FSharpVimFixture(unittest.TestCase):
+    def setUp(self):
+        self.fsac = FSAutoComplete('.')
+        self.testscript = 'test/TestScript.fsx'
+        with open(self.testscript, 'r') as content_file:
+            content = map(lambda(line): line.strip('\n'), list(content_file))
+
+        self.fsac.parse(self.testscript, True, content)
+
+    def tearDown(self):
+        self.fsac.quit()
+
+    def test_completion(self):
+        completions = self.fsac.complete(self.testscript, 7, 16, '')
+        self.assertEqual([ 'function1', 'function2', 'gunction' ], completions)
+
 if __name__ == '__main__':
-    testscript = "test/TestScript.fsx"
-    with open(testscript, 'r') as content_file:
-        content = content_file.read()
-    fsac = FSAutoComplete()
-    fsac.parse(testscript, True, content)
-    completions = fsac.complete(testscript, 7, 16)
-    #print completions
-    try:
-        assert completions == []
-        time.sleep(2.0)
-        completions = fsac.complete(testscript, 7, 16)
-        assert completions == [ 'function1', 'function2', 'gunction' ]
-    finally:
-        fsac.quit()
+    unittest.main()
