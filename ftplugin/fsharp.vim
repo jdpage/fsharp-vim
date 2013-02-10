@@ -62,15 +62,30 @@ endfunction
 com! -buffer -range=% Interactive call s:launchInteractive(<line1>, <line2>)
 
 function! fsharp#Complete(findstart, base)
+    let line = getline('.')
+    let idx = col('.')
+    while idx > 0
+        let c = line[idx]
+        if c == ' ' || c == '.'
+            let idx += 1
+            break
+        endif
+        let idx -= 1
+    endwhile
+
     if a:findstart == 1
-        return col('.')
+        return idx
     else
-        python << EOF
+python << EOF
 b = vim.current.buffer
 row, col = vim.current.window.cursor
-fsautocomplete.parse(b.name, True, '\n'.join(b))
-vim.command("return %s" % fsautocomplete.complete(b.name, row - 1, col))
+line = b[row - 1]
+if col > len(line):
+    col = len(line)
+fsautocomplete.parse(b.name, True, b)
+words = fsautocomplete.complete(b.name, row - 1, col, vim.eval('a:base'))
 EOF
+        return pyeval('words')
     endif
 endfunction
 

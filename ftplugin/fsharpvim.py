@@ -10,18 +10,21 @@ class FSAutoComplete:
         self.logfile=open("/tmp/log.txt", "w")
         
     def send(self, txt):
-        #print "sending '%s'" % txt
-        self.logfile.write(txt)
+        self.logfile.write("> " + txt)
         self.logfile.flush()
         self.p.stdin.write(txt)
         
     def read_to_eof(self):
         while True:
-            line = self.p.stdout.readline().strip('\n')
-            if line == '<<EOF>>':
+            line = self.p.stdout.readline()
+            if line == '<<EOF>>\n':
                 break
             else:
-                yield line
+                if ':' in line:
+                    self.logfile.write("< " + line)
+                    self.logfile.flush()
+
+                yield line.strip('\n')
 
     def help(self):
         self.send("help\n")
@@ -29,25 +32,32 @@ class FSAutoComplete:
     def project(self, fn):
         self.p("project \"%s\"\n" % path.abspath(fn))
 
-    def parse(self, fn, full, txt):
+    def parse(self, fn, full, lines):
         fulltext = "full" if full else ""
-        self.send("parse \"%s\" %s\n%s\n<<EOF>>\n" %
-                                (fn, fulltext, txt))
+        self.send("parse \"%s\" %s\n" % (fn, fulltext));
+        for line in lines:
+            self.send(line + "\n");
+        self.send("<<EOF>>\n");
 
     def quit(self):
         self.send("quit\n")
         self.p.wait()
         self.logfile.close()
 
-    def complete(self, fn, line, column):
-        self.send('completion "%s" %d %d 1000\n' % (fn, line, column))
+    def complete(self, fn, line, column, base):
+        self.logfile.write('complete: base = %s\n' % base)
+        self.send('completion "%s" %d %d 10000\n' % (fn, line, column))
         msg = [""]
         while not msg[0].startswith("DATA: completion"):
             if msg[0].startswith("ERROR:"):
-                return []
+                return msg
             msg = list(self.read_to_eof())
-            self.logfile.write("\n".join(msg))
-        return msg[1:]
+
+        msg = msg[1:]
+        if base != "":
+            msg = filter(lambda(line): line.startswith(base), msg)
+
+        return msg
 
 if __name__ == '__main__':
     testscript = "test/TestScript.fsx"
