@@ -69,8 +69,7 @@ class FSAutoComplete:
 
     def tooltip(self, fn, line, column):
         self.send('tooltip "%s" %d %d 1000\n' % (fn, line, column))
-        msg = self.read_and_find('DATA: tooltip')
-        return '\n'.join(msg)
+        return self.read_and_find('DATA: tooltip')
 
 class FSharpVimFixture(unittest.TestCase):
     def setUp(self):

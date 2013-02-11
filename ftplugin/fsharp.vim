@@ -65,7 +65,7 @@ function! fsharp#Balloon()
 python <<EOF
 b = vim.buffers[int(vim.eval('v:beval_bufnr')) - 1]
 fsautocomplete.parse(b.name, True, b)
-vim.command('return %s[0]' % [ fsautocomplete.tooltip(b.name, int(vim.eval('v:beval_lnum')) - 1, int(vim.eval('v:beval_col'))) ])
+vim.command('return join(%s, "\\n")' % fsautocomplete.tooltip(b.name, int(vim.eval('v:beval_lnum')) - 1, int(vim.eval('v:beval_col'))))
 EOF
 endfunction
 
