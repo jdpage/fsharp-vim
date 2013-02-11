@@ -1,13 +1,18 @@
 from subprocess import Popen, PIPE
 from os import path
+import tempfile
 import unittest
 
 class FSAutoComplete:
     def __init__(self, dir):
-        self.p = Popen(['mono', dir + '/bin/fsautocomplete.exe'],
-                       stdin=PIPE,
-                       stdout=PIPE)
-        self.logfile=open("/tmp/log.txt", "w")
+        command = ['mono', dir + '/bin/fsautocomplete.exe']
+        opts = { 'stdin': PIPE, 'stdout': PIPE, 'universal_newlines': True }
+        try:
+            self.p = Popen(command, **opts)
+        except WindowsError:
+            self.p = Popen(command[1:], **opts)
+
+        self.logfile = open(tempfile.gettempdir() + "/log.txt", "w")
         
     def send(self, txt):
         self.logfile.write("> " + txt)

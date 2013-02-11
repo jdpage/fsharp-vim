@@ -65,9 +65,8 @@ function! fsharp#Balloon()
 python <<EOF
 b = vim.buffers[int(vim.eval('v:beval_bufnr')) - 1]
 fsautocomplete.parse(b.name, True, b)
-balloon = fsautocomplete.tooltip(b.name, int(vim.eval('v:beval_lnum')) - 1, int(vim.eval('v:beval_col')))
+vim.command('return %s[0]' % [ fsautocomplete.tooltip(b.name, int(vim.eval('v:beval_lnum')) - 1, int(vim.eval('v:beval_col'))) ])
 EOF
-    return pyeval('balloon')
 endfunction
 
 function! fsharp#Complete(findstart, base)
@@ -92,9 +91,8 @@ line = b[row - 1]
 if col > len(line):
     col = len(line)
 fsautocomplete.parse(b.name, True, b)
-words = fsautocomplete.complete(b.name, row - 1, col, vim.eval('a:base'))
+vim.command('return %s' % fsautocomplete.complete(b.name, row - 1, col, vim.eval('a:base')))
 EOF
-        return pyeval('words')
     endif
 endfunction
 
