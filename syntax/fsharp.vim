@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:     F#
-" Last Change:  Thu 26 Jul 2012 11:32:59 PM CEST
+" Last Change:  Thu 07 Mar 2013 10:44:27 PM CET
 " Maintainer:   Gregor Uhlenheuer <kongo2002@googlemail.com>
 "
 " Note:         This syntax file is a complete rewrite of the original version
@@ -70,7 +70,7 @@ syn keyword fsharpKeyword    do done downcast downto elif else end exception
 syn keyword fsharpKeyword    extern for fun function global if in inherit inline
 syn keyword fsharpKeyword    interface lazy let match member module mutable
 syn keyword fsharpKeyword    namespace new of override rec static struct then
-syn keyword fsharpKeyword    to type upcast val void when while with
+syn keyword fsharpKeyword    to type upcast use val void when while with
 
 syn keyword fsharpKeyword    async atomic break checked component const constraint
 syn keyword fsharpKeyword    constructor continue decimal eager event external
@@ -128,10 +128,12 @@ syn keyword  fsharpOption    Some None
 " operators
 syn keyword fsharpOperator   not and or
 
+syn match   fsharpFormat     display "%\(\d\+\$\)\=[-+' #0*]*\(\d*\|\*\|\*\d\+\$\)\(\.\(\d*\|\*\|\*\d\+\$\)\)\=\([hlL]\|ll\)\=\([bscdiuxXoEefFgGMOAat]\|\[\^\=.[^]]*\]\)" contained
+
 syn match    fsharpCharacter    "'\\\d\d\d'\|'\\[\'ntbr]'\|'.'"
 syn match    fsharpCharErr      "'\\\d\d'\|'\\\d'"
 syn match    fsharpCharErr      "'\\[^\'ntbr]'"
-syn region   fsharpString       start=+"+ skip=+\\\\\|\\"+ end=+"+
+syn region   fsharpString       start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=fsharpFormat
 
 syn match    fsharpFunDef       "->"
 syn match    fsharpRefAssign    ":="
@@ -232,7 +234,9 @@ if version >= 508 || !exists("did_fs_syntax_inits")
     HiLink fsharpCharacter     Character
     HiLink fsharpNumber        Number
     HiLink fsharpFloat         Float
+
     HiLink fsharpString        String
+    HiLink fsharpFormat        Special
 
     HiLink fsharpModifier      StorageClass
 
