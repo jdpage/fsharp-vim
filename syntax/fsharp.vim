@@ -183,6 +183,14 @@ syn region   fsharpAttrib matchgroup=fsharpAttribute start="\[<" end=">]"
 syn region   fsharpRegion matchgroup=fsharpPreCondit start="\%(end\)\@<!region.*$"
             \ end="endregion" fold contains=ALL contained
 
+" omnicomplete
+setlocal omnifunc=fsharp#Complete
+
+" balloons - only works in GUI
+if has("balloon_eval")
+    setlocal ballooneval
+    setlocal balloonexpr=fsharp#Balloon()
+endif
 
 if version >= 508 || !exists("did_fs_syntax_inits")
     if version < 508
